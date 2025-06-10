@@ -81,7 +81,7 @@ export default function App() {
         <Confetti width={window.innerWidth} height={window.innerHeight} />
       )}
       <div className="game-instruction">
-        <h1>Tenzies</h1>
+        <h1>TENZIES</h1>
         <p>
           Roll until all dice are the same. Click on each die to freeze it at
           its current value between rolls.
