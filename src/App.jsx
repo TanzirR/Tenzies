@@ -1,9 +1,25 @@
 import { useState } from "react";
 import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
 import Die from "./Die.jsx";
 
 export default function App() {
-  const [dice, setDice] = useState(generateAllNewDice());
+  const [dice, setDice] = useState(() => generateAllNewDice());
+
+  //Check if the game is won
+  /**
+   * 1. All dice are being held
+   * 2. all the dice have the same value
+   */
+  function gameWon() {
+    if (
+      dice.every((die) => die.isHeld) &&
+      dice.every((die) => die.value === dice[0].value)
+    ) {
+      return true;
+    }
+  }
+  const won = gameWon();
 
   //Generate an array of 10 numbers between 1 and 6 inclusive
   function generateAllNewDice() {
@@ -15,18 +31,7 @@ export default function App() {
     }
     return newDice;
   }
-  //When a dice is held, isHeld is toggled
-  function hold(id) {
-    setDice((prevDice) => {
-      return prevDice.map((prev) => {
-        if (id === prev.id) {
-          return { ...prev, isHeld: !prev.isHeld };
-        } else {
-          return prev;
-        }
-      });
-    });
-  }
+
   //Map over the newDice to display the 10 die
   const diceElements = dice.map(function (diceObj) {
     return (
@@ -39,17 +44,53 @@ export default function App() {
     );
   });
 
-  //Update the state of the values
+  //When a dice is held, isHeld is toggled to true
+  function hold(id) {
+    setDice((prevDice) => {
+      return prevDice.map((prev) => {
+        if (id === prev.id) {
+          return { ...prev, isHeld: !prev.isHeld };
+        } else {
+          return prev;
+        }
+      });
+    });
+  }
+
+  //Only update the state of the values whose isHeld is false
+  // if game is won, start a new game
   function rollDice() {
-    setDice(generateAllNewDice());
+    if (!won) {
+      setDice((prevDice) => {
+        return prevDice.map((prev) => {
+          if (prev.isHeld === false) {
+            return { ...prev, value: Math.ceil(Math.random() * 6) };
+          } else {
+            return prev;
+          }
+        });
+      });
+    } else {
+      return setDice(generateAllNewDice());
+    }
   }
 
   return (
     <main>
+      {won && (
+        <Confetti width={window.innerWidth} height={window.innerHeight} />
+      )}
+      <div className="game-instruction">
+        <h1>Tenzies</h1>
+        <p>
+          Roll until all dice are the same. Click on each die to freeze it at
+          its current value between rolls.
+        </p>
+      </div>
       <div className="dice-container">{diceElements}</div>
 
       <button className="roll-btn" onClick={rollDice}>
-        Roll
+        {won ? "New Game" : "Roll"}
       </button>
     </main>
   );
